@@ -56,7 +56,38 @@ public class KakaoPayRestController {
 	private PaymentDetailDao paymentDetailDao;
 
 	private Map<String, KakaoPayFlashVO> flashMap = Collections.synchronizedMap(new HashMap<>());
-
+	
+	/*
+	@Operation(
+		deprecated = false//비추천 여부(향후 사용 중지 예정이라면 true를 작성)
+		, description = "카카오페이 물품 구매"//기능에 대한 설명
+		, responses = {//예상되는 응답 코드
+			@ApiResponse(
+					responseCode = "200"//상태코드
+					, description = "검사 성공"//설명
+					, content = @Content(//결과 메세지의 형태 및 샘플
+						mediaType = "text/plain"//일반 글자
+						, schema = @Schema(implementation = Boolean.class)
+						, examples = {
+							@ExampleObject(value = "true"),
+							@ExampleObject(value = "false")
+						}
+					)
+			),
+			@ApiResponse(
+				responseCode = "500"//상태코드
+				, description = "서버 오류"//설명
+				, content = @Content(//결과 메세지의 형태 및 샘플
+					//mediaType = "text/plain"//일반 글자
+					schema = @Schema(implementation = String.class)
+					, examples = {
+						@ExampleObject(value = "server error")
+					}
+				)
+			)
+		}
+	)
+	 * */
 	@Operation(summary = "카카오페이 구매", description = "KakaoPay-Purchase")
 	@PostMapping("/buy")
 	public KakaoPayReadyResponseVO buy(
