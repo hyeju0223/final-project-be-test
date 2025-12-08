@@ -1,0 +1,22 @@
+package com.kh.maproot.vo.kakaomap;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Data @Builder @NoArgsConstructor @AllArgsConstructor
+public class KakaoMapLocationVO {
+	private Integer no;
+	private Float x; // lng
+	private Float y; // lat
+	private String name;
+	private Integer angle;
+	
+	public String getLngLat() {
+		return x + "," + y;
+	}
+}
