@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class KakaoMapLocationVO {
 	private Integer no;
-	private Float x; // lng
-	private Float y; // lat
+	private Double x; // lng
+	private Double y; // lat
 	private String name;
 	private Integer angle;
 	
