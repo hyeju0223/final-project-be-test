@@ -75,8 +75,6 @@ public class PaymentService {
 
 	@Transactional
 	public void cancel(long paymentNo) {
-		paymentDao.cancelAll(paymentNo);
-		paymentDetailDao.cancelAll(paymentNo);
 		
 		long gap = 0L;
 		List<PaymentDetailDto> purchaseList = paymentDetailDao.selectList(paymentNo);
@@ -88,6 +86,12 @@ public class PaymentService {
 				gap += (giftcardDto.getGiftcardPoint() * paymentDetailDto.getPaymentDetailQty());
 			}
 		}
+		
+		paymentDao.cancelAll(paymentNo);
+		paymentDetailDao.cancelAll(paymentNo);
+		// 251209 이윤석.
+		// 위 Dao 실행시 결제 상세 내역이 모두 '취소'가 되어 환불이 0원 된다
+		// 부분 취소한 애들부터 검사하고 전체를 '취소'로 바꾼다
 		
 		long origin = kakaoPayDao.origin();
 		long result = origin - gap;
