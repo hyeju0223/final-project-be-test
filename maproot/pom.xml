@@ -144,7 +144,7 @@
 		</dependency>
 		
 		<!-- Security 보안을 적용하기 위한 용도 -->
-		<dependency>
+<!--		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
@@ -152,7 +152,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security-test</artifactId>
 			<scope>test</scope>
-		</dependency>
+		</dependency>-->
 	</dependencies>
 
 	<build>

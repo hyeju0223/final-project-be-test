@@ -5,13 +5,23 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="schedule">
 
+<select id="sequence" resultType="int">
+	select schedule_seq.nextval from dual
+</select>
+
 <insert id="insert">
 	insert into schedule(
-		scheduleNo, scheduleName, scheduleView,
-		scheduleLike, scheduleOwner,
+		schedule_no, schedule_name, 
+		schedule_owner,schedule_start_date
+		<if test="scheduleEndDate != null">
+		,schedule_end_date    
+		</if>
 	) values(
-		#{scheduleNo}, #{scheduleName}, #{scheduleView},
-		#{scheduleLike}, #{scheduleOwner}
+		#{scheduleNo}, #{scheduleName},
+		#{scheduleOwner}, #{scheduleStartDate}
+		<if test="scheduleEndDate != null">
+		,#{scheduleEndDate}
+		</if>
 	)
 </insert>
 </mapper>
