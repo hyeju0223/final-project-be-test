@@ -6,16 +6,17 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.error.TargetNotfoundException;
+import com.kh.maproot.error.UnauthorizationException;
 import com.kh.maproot.service.AccountService;
-import com.kh.maproot.service.CertService;
 import com.kh.maproot.service.TokenService;
 import com.kh.maproot.vo.AccountLoginResponseVO;
+import com.kh.maproot.vo.AccountRefreshVO;
+import com.kh.maproot.vo.TokenVO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -115,6 +116,25 @@ public class AccountRestController {
 				.accessToken(tokenService.generateAccessToken(findDto))//액세스토큰
 				.refreshToken(tokenService.generateRefreshToken(findDto))//갱신토큰
 			.build();
+	}
+	// 토큰 갱신
+	@PostMapping("/refresh")
+	public AccountLoginResponseVO refresh(@RequestBody AccountRefreshVO accountRefreshVO) {
+		String refreshToken = accountRefreshVO.getRefreshToken();
+		if(refreshToken == null || refreshToken.isEmpty())
+			throw new UnauthorizationException();
+		
+		TokenVO tokenVO = tokenService.parse(refreshToken);
+		
+		boolean isValid = tokenService.checkRefreshToken(tokenVO, refreshToken);
+		if(!isValid) throw new TargetNotfoundException();
+		
+		// 재생성 후 반환
+		return AccountLoginResponseVO.builder()
+					.loginId(tokenVO.getLoginId())
+					.loginLevel(tokenVO.getLoginLevel())
+					.accessToken(tokenService.generateAccessToken(tokenVO))
+				.build();
 	}
 	
 	
