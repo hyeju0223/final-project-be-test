@@ -39,7 +39,6 @@ public class AccountDto {
 	@Pattern(regexp = "^010[1-9][0-9]{7}$")
 	private String accountContact;
 	
-	@NotBlank
 	@Email
 	private String accountEmail;
 	private String accountGender;

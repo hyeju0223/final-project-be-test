@@ -8,7 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dto.CertDto;
+import com.kh.maproot.error.TargetAlreadyExistsException;
 import com.kh.maproot.service.CertService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,10 +22,15 @@ public class CertRestController {
 	
 	@Autowired
 	private CertService certService;
+	@Autowired
+	private AccountDao accountDao;
 	
 	@Operation(summary = "휴대폰 인증번호 발송")
 	@PostMapping("/sendPhone")
 	public void sendPhone(@RequestParam String phone) {
+		// 발송 전 중복 검사 방지
+		int count = accountDao.countByAccountContact(phone);
+		if(count > 0) throw new TargetAlreadyExistsException("이미 가입된 전화번호입니다");
 		certService.sendCertPhone(phone);
 	}
 	

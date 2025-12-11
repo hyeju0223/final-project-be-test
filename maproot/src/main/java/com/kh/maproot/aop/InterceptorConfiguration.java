@@ -17,15 +17,19 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
 	public void addInterceptors(InterceptorRegistry registry) {
 		registry.addInterceptor(accountInterceptor)
 					.addPathPatterns(
-						"/account/**"
+						"/account/logout"
 					)
 					.excludePathPatterns(
-						"/account/join",
-						"/account/login",
-						"/account/refresh"
+						
 					);
 		registry.addInterceptor(tokenRenewalInterceptor)
-					.addPathPatterns("/**");//모든 주소
+					.addPathPatterns("/**")
+					.excludePathPatterns(
+							"/account/refresh",
+							"/account/join",
+							"/account/login",
+							"/account/logout"
+							);
 	}
 
 }
