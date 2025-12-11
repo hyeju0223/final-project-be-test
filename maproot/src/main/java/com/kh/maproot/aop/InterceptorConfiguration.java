@@ -32,5 +32,4 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                             "/account/logout"
                             );
     }
-
 }
