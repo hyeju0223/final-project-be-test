@@ -12,11 +12,15 @@ public class ScheduleDao {
 	@Autowired
 	private SqlSession sqlSession;
 	
-	public ScheduleDto insert(ScheduleDto scheduleDto) {
+	public int insert(ScheduleDto scheduleDto) {
 		int sequence = sqlSession.selectOne("schedule.sequence");
 		scheduleDto.setScheduleNo(sequence);
 		sqlSession.insert("schedule.insert", scheduleDto);
-		return scheduleDto;
+		return sequence;
+	}
+	
+	public ScheduleDto selectByScheduleNo(int scheduleNo) {
+		return sqlSession.selectOne("schedule.selectByScheduleNo", scheduleNo);
 	}
 
 }

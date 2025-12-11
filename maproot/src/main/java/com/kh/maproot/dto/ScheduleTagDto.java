@@ -1,5 +1,7 @@
 package com.kh.maproot.dto;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -9,6 +11,6 @@ import lombok.NoArgsConstructor;
 public class ScheduleTagDto {
 
 	private int scheduleNo;
-	private int tagNo;
+	private String tagName;
 	
 }

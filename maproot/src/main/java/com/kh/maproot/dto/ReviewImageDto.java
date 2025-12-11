@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class ReviewImageDto {
 
 	  private int reviewNo;
-	    private int attachmentNo;
+	  private int attachmentNo;
 }

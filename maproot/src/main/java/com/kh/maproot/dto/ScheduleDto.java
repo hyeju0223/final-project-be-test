@@ -1,11 +1,12 @@
 package com.kh.maproot.dto;
 
-import java.security.Timestamp;
-import java.time.LocalDate;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import jakarta.validation.constraints.NegativeOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,7 +25,9 @@ public class ScheduleDto {
     private String scheduleState;   // VARCHAR2(20) ('open','close','progress')
     private Timestamp scheduleWtime; // TIMESTAMP
     private Timestamp scheduleEtime; // TIMESTAMP
-    private LocalDate scheduleStartDate;
-    private LocalDate scheduleEndDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime scheduleStartDate;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime scheduleEndDate;
 
 }

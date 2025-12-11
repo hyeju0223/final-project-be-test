@@ -7,10 +7,10 @@ import lombok.NoArgsConstructor;
 
 @Data @AllArgsConstructor @NoArgsConstructor @Builder
 
-public class ReviewUnitLink {
-	
-	 private int linkNo;          // PK
-	    private int reviewNo;        // 리뷰
-	    private int scheduleUnitNo;  // 일정 세부 구간
+public class ReviewUnitLinkDto {
+
+	private int linkNo;          // PK
+	private int reviewNo;        // 리뷰
+	private int scheduleUnitNo;  // 일정 세부 구간
 
 }
