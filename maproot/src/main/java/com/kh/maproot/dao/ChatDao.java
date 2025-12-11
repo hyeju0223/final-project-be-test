@@ -24,8 +24,13 @@ public class ChatDao {
 		return chatDto;
 	}
 	
-	public List<ChatDto> selectList() {
-		return sqlSession.selectList("chat.list");
+	public List<ChatDto> selectAllList() {
+		return sqlSession.selectList("chat.selectAlllist");
+	}
+	public List<ChatDto> selectCounselorList(String accountId) {
+		Map<String,Object> params = new HashMap<>();
+		params.put("accountId", accountId);
+		return sqlSession.selectList("chat.selectCounselorList", params);
 	}
 	
 	public ChatDto selectOne(int chatNo) {

@@ -14,22 +14,22 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
 	private TokenRenewalInterceptor tokenRenewalInterceptor;
 	
 	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(accountInterceptor)
-					.addPathPatterns(
-						"/account/logout"
-					)
-					.excludePathPatterns(
-						
-					);
-		registry.addInterceptor(tokenRenewalInterceptor)
-					.addPathPatterns("/**")
-					.excludePathPatterns(
-							"/account/refresh",
-							"/account/join",
-							"/account/login",
-							"/account/logout"
-							);
-	}
-
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(accountInterceptor)
+                    .addPathPatterns(
+                        "/account/logout",
+                        "/chat/**"
+                    )
+                    .excludePathPatterns(
+                        
+                    );
+        registry.addInterceptor(tokenRenewalInterceptor)
+                    .addPathPatterns("/**")
+                    .excludePathPatterns(
+                            "/account/refresh",
+                            "/account/join",
+                            "/account/login",
+                            "/account/logout"
+                            );
+    }
 }

@@ -16,12 +16,18 @@
 	    <selectKey keyProperty="chatNo" resultType="int" order="BEFORE">
             SELECT chat_seq.nextval FROM dual
         </selectKey>
-		insert into chat(chat_no, chat_maxcount, chat_status, chat_id) 
-        values(#{chatNo}, #{chatMaxCount}, #{chatStatus}, #{chatId}) 
+		insert into chat(chat_no, chat_maxcount, chat_status) 
+        values(#{chatNo}, #{chatMaxCount}, #{chatStatus}) 
 	</insert>
 	
-	<select id="list" resultType="ChatDto">
+	<select id="selectAlllist" resultType="ChatDto">
 		select * from chat order by chat_no asc
+	</select>
+	<select id="selectCounselorList" resultType="ChatDto" parameterType="map">
+		select * from chat
+		where (chat_status = 'WAITING' and chat_id is null)
+		or (chat_status = 'ACTIVE' and chat_id = #{accountId})
+		order by chat_status desc, chat_no asc
 	</select>
 	
 	<select id="detail" resultType="ChatDto">
@@ -32,7 +38,8 @@
 	<update id="changeStatus" parameterType="ChatDto">
 	    update chat set
 	        chat_status = #{chatStatus},
-	        chat_id = #{chatId}
+	        chat_id = #{chatId},
+	        chat_level = #{chatLevel}
 	    where chat_no = #{chatNo}
 	</update>
 	

@@ -15,4 +15,5 @@ public class ChatDto {
 	
 	private String chatStatus;
 	private String chatId;
+	private String chatLevel;
 }
