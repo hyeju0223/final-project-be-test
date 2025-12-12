@@ -148,8 +148,10 @@ public class ScheduleReviewRestcontroller {
 	}
 	
 	//세부 일정 삭제
-	@DeleteMapping("/unit/{scheduleUnitNo}")
-	public void deleteScheduleUnit(@PathVariable int scheduleUnitNo) {
-		reviewUnitLinkDao.deleteBySelectUnit(scheduleUnitNo);
+	@DeleteMapping("/unit/{reviewNo}")
+	public void deleteScheduleUnit(
+			@PathVariable int reviewNo,
+			@RequestParam int scheduleUnitNo) {
+		reviewUnitLinkDao.deleteBySelectUnit(reviewNo, scheduleUnitNo);
 	}
 }

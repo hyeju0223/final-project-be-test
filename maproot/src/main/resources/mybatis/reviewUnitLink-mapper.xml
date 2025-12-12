@@ -9,6 +9,11 @@
 	select review_unit_link_seq.nextval from dual
 </select>
 
+
+<select id="selectByReviewNo" resultType="ReviewUnitLinkDto">
+	select * from review_unit_link where review_no = #{reviewNo}
+</select>
+
 <insert id="insert">
 	insert into review_unit_link(
 	link_no , review_no , schedule_unit_no 
@@ -17,27 +22,10 @@
 	)
 </insert>
 
-<select id="select"  resultType="ReviewUnitLinkDto">
-	select * from review_unit_link 
-	<where>
-		<if test="reviewNo != null">
-	 review_no = #{reviewNo}
-		</if>
-	</where>
-
-</select>
-
-<delete id="delete">
+<delete id="deleteBySelectUnit" >
 	delete from review_unit_link
-	<where>
-		<if test="scheduleUnitNo != null">
-		and schedule_unit_no = #{scheduleUnitNo}
-		</if>
-		<if test="reviewNo != null">
+		where schedule_unit_no = #{scheduleUnitNo}
 		and review_no = #{reviewNo}
-		</if>
-	</where>
-	 
 </delete>
 
 </mapper>

@@ -10,6 +10,7 @@
 	<where>
  		schedule_no = #{scheduleNo}
 	</where>
+	order by review_wtime asc
 </select>
 
 </mapper>
