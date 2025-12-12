@@ -6,14 +6,28 @@
 
 	<!-- <select id="sequence" resultType="int">
 		select chat_seq.nextval from dual
-	</select> -->
+	</select>
 	
 	<insert id="insert">
-		insert into chat(chat_no) values(chat_seq.nextval)
+		insert into chat(chat_no) values(#{chatNo})
+	</insert> -->
+	
+	<insert id="insert" parameterType="ChatDto">
+	    <selectKey keyProperty="chatNo" resultType="int" order="BEFORE">
+            SELECT chat_seq.nextval FROM dual
+        </selectKey>
+		insert into chat(chat_no, chat_maxcount, chat_status) 
+        values(#{chatNo}, #{chatMaxCount}, #{chatStatus}) 
 	</insert>
 	
-	<select id="list" resultType="ChatDto">
+	<select id="selectAlllist" resultType="ChatDto">
 		select * from chat order by chat_no asc
+	</select>
+	<select id="selectCounselorList" resultType="ChatDto" parameterType="map">
+		select * from chat
+		where (chat_status = 'WAITING' and chat_id is null)
+		or (chat_status = 'ACTIVE' and chat_id = #{accountId})
+		order by chat_status desc, chat_no asc
 	</select>
 	
 	<select id="detail" resultType="ChatDto">
@@ -21,6 +35,13 @@
 	</select>
 	
 	<!-- <update id="update"> </update> -->
+	<update id="changeStatus" parameterType="ChatDto">
+	    update chat set
+	        chat_status = #{chatStatus},
+	        chat_id = #{chatId},
+	        chat_level = #{chatLevel}
+	    where chat_no = #{chatNo}
+	</update>
 	
 	<delete id="delete">
 		delete from chat where chat_no = #{chatNo}
@@ -28,17 +49,17 @@
 	
 	<!-- 참여자 처리 -->
 	<insert id="enter">
-		insert into party(party_chat, party_account)
-		values(#{partyChat}, #{partyAccount})
+		insert into party(chat_no, party_account)
+		values(#{chatNo}, #{partyAccount})
 	</insert>
 	
 	<delete id="leave">
 		delete party 
-		where party_chat = #{partyChat} and party_account = #{partyAccount}
+		where chat_nO = #{chatNo} and party_account = #{partyAccount}
 	</delete>
 	
 	<select id="check" resultType="int">
 		select count(*) from party
-		where party_chat = #{partyChat} and party_account = #{partyAccount}
+		where chat_nO = #{chatNo} and party_account = #{partyAccount}
 	</select>
 </mapper>

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,64 +16,107 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.maproot.dao.ChatDao;
 import com.kh.maproot.dto.ChatDto;
+import com.kh.maproot.error.TargetNotfoundException;
+import com.kh.maproot.vo.TokenVO;
 
-@CrossOrigin
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/chat")
 public class ChatRestController {
-	@Autowired
-	private ChatDao chatDao;
-	
-//	@PostMapping("/")
-//	public ChatDto create(@RequestBody ChatDto chatDto,
-//						@RequestAttribute TokenVO tokenVO) {
-//		ChatDto resultDto = chatDao.insert(chatDto);
-//		chatDao.enter(resultDto.getChatNo(), tokenVO.getLoginId());
-//		return resultDto;
-//	}
-	@PostMapping("/")
-	public ChatDto create(@RequestBody ChatDto chatDto) { 
-	// 💡 토큰VO 제거. 요청 본문에는 chatDto (방생성 DTO)만 받습니다.
-	    
-	    // 🚨 임시: 테스트용 ID 하드코딩 (운영 시 반드시 토큰으로 변경해야 함)
-	    String userAccountId = "temp_user_A"; 
-	    String counselorId = "counselor_001";
-	    
-	    // 1. 방 생성 (chatNo 획득)
-	    ChatDto resultDto = chatDao.insert(chatDto);
-	    
-	    // 2. 일반 회원 입장
-	    chatDao.enter(resultDto.getChatNo(), userAccountId);
-	    
-	    // 3. 상담원 입장 (1:1 채팅 완성)
-	    chatDao.enter(resultDto.getChatNo(), counselorId);
-	    
-	    // 이 시점에서 chatNo를 포함한 DTO 반환
-	    return resultDto;
-	}
-	
-//	//상담사 용 목록
-//	@GetMapping("list")
-//	public List<ChatDto> list() {
-//		return chatDao.selectList();
-//	}
-//	@GetMapping("/{chatNo}")
-//	public ChatDto detail(@PathVariable int chatNo) {
-//		return chatDao.selectOne(chatNo);
-//	}
-//	
-//	@PostMapping("/enter")
-//	public void enter(@RequestBody ChatDto chatDto,
-//			@RequestAttribute TokenVO tokenVO) {
-//		ChatDto findDto = chatDao.selectOne(chatDto.getChatNo());
-//		chatDao.enter(chatDto.getChatNo(), tokenVO.getLoginId());
-//	}
-//	@PostMapping("/check")
-//	public Map<String, Boolean> check(@RequestBody ChatDto chatDto,
-//			@RequestAttribute TokenVO tokenVO) {
-//		return Map.of(
-//			"result",
-//			chatDao.check(chatDto.getChatNo(), tokenVO.getLoginId())
-//		);
-//	}
+
+    @Autowired
+    private ChatDao chatDao;
+
+    @PostMapping
+    @Transactional
+    public ChatDto create(
+            @RequestBody ChatDto chatDto,
+            @RequestAttribute TokenVO tokenVO) {
+
+        chatDto.setChatStatus("WAITING");
+
+        ChatDto resultDto = chatDao.insert(chatDto);
+
+        chatDao.enter(resultDto.getChatNo(), tokenVO.getLoginId());
+
+        return resultDto;
+    }
+
+    //상담사 용 목록
+    @GetMapping("/counselor/list")
+    public List<ChatDto> counselorList(@RequestAttribute TokenVO tokenVO) {
+        String accountLevel = tokenVO.getLoginLevel();
+
+        if (!"상담사".equals(accountLevel)) {
+            throw new TargetNotfoundException("접근 권한이 없습니다.");
+        }
+
+        String counselorId = tokenVO.getLoginId();
+        return chatDao.selectCounselorList(counselorId);
+    }
+
+    // 3. 관리자용 전체 목록 조회 (필터링 없음)
+    @GetMapping("/admin/list")
+    public List<ChatDto> adminList() {
+        return chatDao.selectAllList();
+    }
+
+    @GetMapping("/{chatNo}")
+    public ChatDto detail(@PathVariable int chatNo) {
+        return chatDao.selectOne(chatNo);
+    }
+
+    // 채팅방 상태 및 상담원 배정/해제
+    @PostMapping("/status")
+    @Transactional
+    public boolean changeStatus(
+            @RequestBody ChatDto chatDto,
+            @RequestAttribute TokenVO tokenVO) {
+
+        String loginId = tokenVO.getLoginId();
+        String loginLevel = tokenVO.getLoginLevel();
+
+        if ("ACTIVE".equals(chatDto.getChatStatus())) {
+
+            if (!"상담사".equals(loginLevel)) {
+                throw new RuntimeException("상담사만 상담을 시작할 수 있습니다.");
+            }
+
+            chatDto.setChatId(loginId);
+            chatDto.setChatLevel("상담사");
+        }
+        else {
+            chatDto.setChatId(null);
+            chatDto.setChatLevel(null);
+        }
+
+        return chatDao.changeStatus(chatDto);
+    }
+
+    // 채팅방 참여 (party 테이블에 등록)
+    @PostMapping("/enter")
+    public void enter(
+            @RequestBody Map<String, Object> data,
+            @RequestAttribute TokenVO tokenVO) {
+
+        int chatNo = (Integer) data.get("chatNo");
+        String accountId = tokenVO.getLoginId();
+
+        chatDao.enter(chatNo, accountId);
+    }
+
+    // 참여 여부 확인
+    @PostMapping("/check")
+    public Map<String, Boolean> check(
+            @RequestBody Map<String, Object> data,
+            @RequestAttribute TokenVO tokenVO) {
+
+        int chatNo = (Integer) data.get("chatNo");
+        String accountId = tokenVO.getLoginId();
+
+        return Map.of(
+                "result",
+                chatDao.check(chatNo, accountId)
+        );
+    }
 }

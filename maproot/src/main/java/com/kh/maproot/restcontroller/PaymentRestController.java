@@ -54,8 +54,6 @@ public class PaymentRestController {
 				.loginLevel("일반회원")
 				.build();
 		
-		log.debug(tokenVO2.toString());
-		
 		return paymentDao.selectList(tokenVO2);
 	}
 

@@ -29,8 +29,6 @@ public class GiftcardRestController {
 	@GetMapping("/")
 	public List<GiftcardDto> list(){
 		List<GiftcardDto> giftcardDto = giftcardDao.selectList();
-		log.debug("ASdadasd");
-		log.debug(giftcardDto.toString());
 		return giftcardDto;
 	}
 	
