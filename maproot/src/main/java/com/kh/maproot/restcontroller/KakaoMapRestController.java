@@ -114,6 +114,11 @@ public class KakaoMapRestController {
 		return kakaoMapService.getAddress(requestVO);
 	}
 	
+	@PostMapping("/searchAddress")
+	public List<Map<String, Object>> searchAddress(@RequestBody Map<String, Object> searchData) {
+		return kakaoMapService.getMarkerData(searchData);
+	}
+	
 	@PostMapping("/insertData")
 	public void insertData(@RequestBody KakaoMapDataWrapperDto data) {
 		kakaoMapService.insert(data.getData());

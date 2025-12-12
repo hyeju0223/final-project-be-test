@@ -35,8 +35,8 @@ public class KakaoMapService {
 	@Autowired @Qualifier("kakaomapWebClient")
 	private WebClient mapClient;
 	
-	@Autowired @Qualifier("kakaomapGeocoder")
-	private WebClient geoClient;
+	@Autowired @Qualifier("kakaomapLocal")
+	private WebClient localClient;
 	
 	@Autowired
 	private ScheduleUnitDao scheduleUnitDao;
@@ -87,9 +87,9 @@ public class KakaoMapService {
 		return response;
 	}
 	public KakaoMapGeocoderResponseVO getAddress(KakaoMapGeocoderRequestVO requestVO) {
-		KakaoMapGeocoderResponseVO response = geoClient.get()
+		KakaoMapGeocoderResponseVO response = localClient.get()
 				.uri(uriBuilder -> uriBuilder
-				        .path("/coord2address") // 🚨 baseUrl 이후의 경로만 지정
+				        .path("/geo/coord2address") // 🚨 baseUrl 이후의 경로만 지정
 				        .queryParam("x", requestVO.getX()) // 🚨 쿼리 파라미터로 데이터 전달
 				        .queryParam("y", requestVO.getY())
 				        .queryParam("input_coord", requestVO.getInputCoord())
@@ -100,8 +100,53 @@ public class KakaoMapService {
 				.block(); // 동기적으로 변환하여 응답이 올때까지 기다려라. (RestTemplate과 같아짐)
 		
 		return response;
-		
 	}
+	
+    public List<Map<String, Object>> getMarkerData(Map<String, Object> requestVO) {
+        String query = (String) requestVO.get("query");
+        // 전체 결과를 담을 리스트 (document List)
+        List<Map<String, Object>> accumulatedDocuments = new ArrayList<>();
+
+        // 1페이지부터 재귀 호출 시작
+        // (query, page, 누적 리스트)를 전달
+        return roopSearch(query, 1, accumulatedDocuments);
+    }
+
+    private List<Map<String, Object>> roopSearch(String query, int currentPage, List<Map<String, Object>> accumulatedDocuments) {
+        // API 호출 (currentPage를 사용)
+        Map<String, Object> response = localClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/search/keyword")
+                        .queryParam("query", query)
+                        .queryParam("page", currentPage) // 현재 페이지 번호를 사용
+                        .build()
+                )
+                .retrieve()
+                .bodyToMono(Map.class)
+                .block();
+
+        // 응답 데이터 파싱
+        Map<String, Object> meta = (Map<String, Object>) response.get("meta");
+        List<Map<String, Object>> documents = (List<Map<String, Object>>) response.get("documents");
+        boolean isEnd = (Boolean) meta.get("is_end");
+
+        // 1. 현재 페이지의 documents를 누적 리스트에 추가
+        if (documents != null) {
+            accumulatedDocuments.addAll(documents);
+        }
+
+        // 2. 종료 조건 확인
+        // - isEnd가 true이거나 (마지막 페이지)
+        // - 페이지가 45를 초과하면 (카카오맵 최대 페이지 제한)
+        if (isEnd || currentPage >= 45) {
+            log.info("검색 종료. 총 {}개 데이터 누적.", accumulatedDocuments.size());
+            return accumulatedDocuments; // 최종 결과 반환
+        } else {
+            // 3. 다음 페이지를 요청하며 재귀 호출
+            return roopSearch(query, currentPage + 1, accumulatedDocuments);
+        }
+    }
+	
 	@Transactional
 	public void insert(KakaoMapDataDto datas) {
 		Map<String, KakaoMapDaysDto> daysMap = datas.getDays();
