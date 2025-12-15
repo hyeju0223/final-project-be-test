@@ -16,7 +16,7 @@ public class ShopDao {
 	public List<ShopDto> selectList() {
 		return sqlSession.selectList("shop.list");
 	}
-	public ShopDto selectOne(Long shopItemNo) {
-		return sqlSession.selectOne("shop.list", shopItemNo);
+	public ShopDto selectOne(Long shopNo) {
+		return sqlSession.selectOne("shop.list", shopNo);
 	}
 }
