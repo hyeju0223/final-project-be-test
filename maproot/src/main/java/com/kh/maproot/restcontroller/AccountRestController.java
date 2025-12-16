@@ -5,6 +5,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -130,6 +131,9 @@ public class AccountRestController {
 		boolean isValid = passwordEncoder.matches(accountDto.getAccountPw(), findDto.getAccountPw());
 		if(!isValid) throw new TargetNotfoundException("로그인 정보 오류");
 		
+		// 로그인 시간 업데이트
+		accountDao.updateLoginTime(accountDto.getAccountId());
+		
 		// 로그인 성공
 		return AccountLoginResponseVO.builder()
 				.loginId(findDto.getAccountId())//아이디
@@ -138,6 +142,7 @@ public class AccountRestController {
 				.refreshToken(tokenService.generateRefreshToken(findDto))//갱신토큰
 			.build();
 	}
+	
 	// 토큰 갱신
 	@PostMapping("/refresh")
 	public AccountLoginResponseVO refresh(@RequestBody AccountRefreshVO accountRefreshVO) {
@@ -175,5 +180,13 @@ public class AccountRestController {
 		return result;
 	}
 	
-	
+	// 비밀번호 변경
+	@PatchMapping("/changePw")
+	public void changePw(@RequestBody AccountDto accountDto) {
+		AccountDto findDto = accountDao.selectOne(accountDto.getAccountId());
+		if(findDto == null) throw new TargetNotfoundException("존재하지 않는 회원");
+		// 비밀번호 암호화
+		String newPw = passwordEncoder.encode(accountDto.getAccountPw());
+		accountDao.updatePw(newPw, findDto.getAccountId());
+	}
 }
