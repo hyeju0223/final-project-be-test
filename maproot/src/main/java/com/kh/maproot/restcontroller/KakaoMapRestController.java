@@ -1,6 +1,6 @@
 package com.kh.maproot.restcontroller;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,19 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kh.maproot.dto.ScheduleRouteDto;
-import com.kh.maproot.dto.ScheduleUnitDto;
-import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataWrapperDto;
-import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
-import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
-import com.kh.maproot.service.KakaoMapService;
+import com.kh.maproot.dto.tmap.TmapResponseDto;
+import com.kh.maproot.service.MapService;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderResponseVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapLocationVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapMultyRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapResponseVO;
+import com.kh.maproot.vo.tmap.TmapRequestVO;
+import com.kh.maproot.vo.tmap.TmapResponseVO;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 public class KakaoMapRestController {
 	
 	@Autowired
-	private KakaoMapService kakaoMapService;
+	private MapService mapService;
 	
 	@PostMapping("/search")
 	public KakaoMapResponseVO search(@RequestBody List<KakaoMapLocationVO> location, @RequestParam String priority) {
@@ -59,7 +57,7 @@ public class KakaoMapRestController {
 					.summary(false)
 				.build();
 		
-		return kakaoMapService.direction(requestVO);
+		return mapService.direction(requestVO);
 	}
 	
 	@PostMapping("/searchAll")
@@ -101,7 +99,14 @@ public class KakaoMapRestController {
 //					.carHipass(null)
 				.build();
 		
-		return kakaoMapService.directionMulty(requestVO);
+		return mapService.directionMulty(requestVO);
+	}
+	
+	@PostMapping("/searchForWalk")
+	public TmapResponseVO searchForWalk(@RequestBody List<KakaoMapLocationVO> location, @RequestParam(required = false) String priority) {
+		log.debug("location = {}", location);
+		
+		return mapService.walk(location, priority);
 	}
 	
 	@PostMapping("/getAddress")
@@ -111,17 +116,17 @@ public class KakaoMapRestController {
 					.y(String.valueOf(location.getY()))
 					.inputCoord("WGS84") // 지원 좌표계: WGS84, WCONGNAMUL, CONGNAMUL, WTM, TM (기본값: WGS84)
 				.build();
-		return kakaoMapService.getAddress(requestVO);
+		return mapService.getAddress(requestVO);
 	}
 	
 	@PostMapping("/searchAddress")
 	public List<Map<String, Object>> searchAddress(@RequestBody Map<String, Object> searchData) {
-		return kakaoMapService.getMarkerData(searchData);
+		return mapService.getMarkerData(searchData);
 	}
 	
 	@PostMapping("/insertData")
 	public void insertData(@RequestBody KakaoMapDataWrapperDto data) {
-		kakaoMapService.insert(data.getData());
+		mapService.insert(data.getData());
 	}
 	
 }

@@ -1,10 +1,12 @@
 package com.kh.maproot.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kh.maproot.aop.TokenRenewalInterceptor;
 import com.kh.maproot.dao.ScheduleRouteDao;
 import com.kh.maproot.dao.ScheduleUnitDao;
 import com.kh.maproot.dto.ScheduleRouteDto;
@@ -20,6 +25,9 @@ import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
+import com.kh.maproot.dto.tmap.TmapFeatureDto;
+import com.kh.maproot.dto.tmap.TmapGeometryDto;
+import com.kh.maproot.dto.tmap.TmapResponseDto;
 import com.kh.maproot.utils.GeometryUtils;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapGeocoderResponseVO;
@@ -27,22 +35,35 @@ import com.kh.maproot.vo.kakaomap.KakaoMapLocationVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapMultyRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapRequestVO;
 import com.kh.maproot.vo.kakaomap.KakaoMapResponseVO;
+import com.kh.maproot.vo.tmap.TmapCoordinateVO;
+import com.kh.maproot.vo.tmap.TmapRequestVO;
+import com.kh.maproot.vo.tmap.TmapResponseVO;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Service @Slf4j
-public class KakaoMapService {
+public class MapService {
+
+    private final TokenRenewalInterceptor tokenRenewalInterceptor;
 	@Autowired @Qualifier("kakaomapWebClient")
 	private WebClient mapClient;
 	
 	@Autowired @Qualifier("kakaomapLocal")
 	private WebClient localClient;
 	
+	@Autowired @Qualifier("TmapWebClient")
+	private WebClient tmapClient;
+	
 	@Autowired
 	private ScheduleUnitDao scheduleUnitDao;
 	
 	@Autowired
 	private ScheduleRouteDao scheduleRouteDao;
+
+
+    MapService(TokenRenewalInterceptor tokenRenewalInterceptor) {
+        this.tokenRenewalInterceptor = tokenRenewalInterceptor;
+    }
 	
 	
 	
@@ -237,5 +258,124 @@ public class KakaoMapService {
 	    	
 	    	scheduleRouteDao.insert(routeDto);
 	    }
+	}
+	public TmapResponseVO walk(List<KakaoMapLocationVO> location, String priority) {
+		
+		KakaoMapLocationVO start = location.get(0);
+	    KakaoMapLocationVO end = location.get(location.size() - 1);
+	    String passList = null;
+	    if (location.size() > 2 && location.size() <= 7) { // 최대 7지점 (Start 1 + Pass 5 + End 1)
+	        // 경유지는 1번 인덱스부터 끝에서 두 번째 인덱스까지입니다.
+	        passList = location.subList(1, location.size() - 1).stream()
+	            .map(marker -> String.format("%.6f,%.6f", marker.getX(), marker.getY()))
+	            .collect(Collectors.joining("_"));
+	    }
+	    
+		Map<String, Integer> convertPriority = new HashMap<>();
+		convertPriority.put("RECOMMEND", 0);
+		convertPriority.put("TIME", 10);
+		convertPriority.put("DISTANCE", 30);
+		
+		TmapRequestVO requestVO = TmapRequestVO.builder()
+				.startX(start.getX())
+				.startY(start.getY())
+				.startName(start.getName())
+				.endX(end.getX())
+				.endY(end.getY())
+				.endName(end.getName())
+//					.endPolid(null)
+				.passList(passList)
+				.searchOption(convertPriority.get(priority != null ? priority : "RECOMMEND"))
+//					.reqCoordType(null)
+//					.resCoordType(null)
+//					.sort(null)
+				.build();
+		
+		TmapResponseDto response = tmapClient.post()
+				.uri(uriBuilder -> uriBuilder
+						.path("/routes/pedestrian")
+						.queryParam("version", 1) 
+						.build())
+				.bodyValue(requestVO) 
+				.retrieve()
+				.bodyToMono(TmapResponseDto.class)
+				.block();
+	
+		TmapResponseVO responseVO = TmapResponseVO.builder()
+					.priority(priority)
+					.distance(new ArrayList<>())
+					.totalDistance(0)
+					.duration(new ArrayList<>())
+					.totalDuration(0)
+					.linepath(new ArrayList<>())
+				.build();
+		
+		// 현재 처리 중인 구간의 누적 거리/시간
+	    int currentSegmentDistance = 0;
+	    int currentSegmentTime = 0;
+	    
+	    List<TmapCoordinateVO> currentSegmentPath = new ArrayList<>();
+
+	    for(TmapFeatureDto feature : response.getFeatures()) {
+	        // --- LineString: 전체 및 현재 구간 거리/시간/좌표 누적 ---
+	        if(feature.getGeometry().getType().equalsIgnoreCase("LineString")) {
+	            
+	        	// 전체 누적
+	            int featureDistance = feature.getProperties().getDistance();
+	            int featureTime = feature.getProperties().getTime();
+	            responseVO.setTotalDistance(responseVO.getTotalDistance() + featureDistance);
+	            responseVO.setTotalDuration(responseVO.getTotalDuration() + featureTime);
+	            
+	            // 현재 구간 누적
+	            currentSegmentDistance += featureDistance;
+	            currentSegmentTime += featureTime;
+
+	            // LinePath 좌표 추출 및 누적 
+	            TmapGeometryDto geometry = feature.getGeometry();
+	            List<Object> rawCoordinates = geometry.getCoordinates();
+	            List<List<Double>> lineCoordinates = new ArrayList<>();
+	            
+	            for(Object outerItem : rawCoordinates) {
+	                if(outerItem instanceof List) {
+	                    @SuppressWarnings("unchecked")
+	                    List<Double> coordPair = (List<Double>) outerItem;
+	                    lineCoordinates.add(coordPair);
+	                }
+	            }
+	            for(List<Double> coordPair : lineCoordinates) {
+	                if(coordPair.size() == 2) {
+	                    // 현재 구간 경로에 좌표 추가
+	                    currentSegmentPath.add(TmapCoordinateVO.builder().lng(coordPair.get(0)).lat(coordPair.get(1)).build());                       
+	                }
+	            }
+
+	        // --- Point: 구간 종료 지점(경유지/도착지) 확인 및 저장 ---
+	        } else if (feature.getGeometry().getType().equalsIgnoreCase("Point") && location.size() > 2) {
+	            
+	        	String pointType = feature.getProperties().getPointType();
+	            
+	            // 🚩 2. Point Type이 경유지(PP, PP1~PP5) 또는 도착지(EP)인지 확인
+	            // SP(출발지)와 GP(일반 안내점)는 무시합니다.
+	            if (pointType.startsWith("PP") || pointType.equalsIgnoreCase("EP")) {
+	                
+	                // 3. 구간 완료: 누적된 거리와 시간을 리스트에 저장
+	                responseVO.getDistance().add(currentSegmentDistance);
+	                responseVO.getDuration().add(currentSegmentTime);
+	                
+	                // Note: LineString이 하나도 없는데 PP/EP가 나오는 예외 상황 방지를 위해 비어있지 않은지 확인하는 것이 좋습니다.
+	                if (!currentSegmentPath.isEmpty()) {
+	                    responseVO.getLinepath().add(currentSegmentPath);
+	                }
+	                
+	                // 4. 다음 구간을 위해 누적 변수를 리셋
+	                currentSegmentDistance = 0;
+	                currentSegmentTime = 0;
+	                
+	                currentSegmentPath = new ArrayList<>();
+	            }
+	        }
+	    }
+		
+		return responseVO;
 	}
 }
