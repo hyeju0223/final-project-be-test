@@ -29,6 +29,9 @@ public class AccountDao {
 	public int countByAccountContact(String accountContact) {
 		return sqlSession.selectOne("account.countByAccountContact", accountContact);
 	}
+	public int countByAccountEmail(String accountEmail) {
+		return sqlSession.selectOne("account.countByAccountEmail", accountEmail);
+	}
 	
 	// 로그인 시 회원의 로그인 시간 업데이트 
 	public void updateLoginTime(String accountId) {
@@ -60,6 +63,15 @@ public class AccountDao {
 	// 회원조회(아이디)
 	public AccountDto selectOne(String accountId) {
 		return sqlSession.selectOne("account.detail", accountId);
+	}
+	
+	//아이디 찾기
+	public String findAccountId(String accountContact, String accountEmail) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("accountContact", accountContact);
+		params.put("accountEmail", accountEmail);
+		
+		return sqlSession.selectOne("account.findAccountId", params);
 	}
 	
 	// 카카오페이 관련

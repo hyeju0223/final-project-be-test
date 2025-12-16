@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.kh.maproot.dao.AccountDao;
@@ -161,6 +162,17 @@ public class AccountRestController {
 	public void logout(@RequestHeader("Authorization") String bearerToken) {
 		TokenVO tokenVO = tokenService.parse(bearerToken);
 		refreshTokenDao.deleteByTarget(tokenVO.getLoginId());
+	}
+	
+	//아이디찾기
+	@Operation(summary = "아이디 찾기", description = "휴대폰 번호 또는 이메일로 아이디를 조회합니다.")
+	@PostMapping("/findId")
+	public String findId(
+			@RequestParam(required = false) String accountContact, 
+			@RequestParam(required = false) String accountEmail) {
+		String result = accountDao.findAccountId(accountContact, accountEmail);
+		if(result == null) throw new TargetNotfoundException("일치하는 회원 정보가 없습니다");
+		return result;
 	}
 	
 	
