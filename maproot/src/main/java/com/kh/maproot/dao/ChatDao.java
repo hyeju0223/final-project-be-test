@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.ChatDto;
+import com.kh.maproot.error.TargetNotfoundException;
 
 @Repository
 public class ChatDao {
@@ -27,14 +28,16 @@ public class ChatDao {
 	public List<ChatDto> selectAllList() {
 		return sqlSession.selectList("chat.selectAlllist");
 	}
-	public List<ChatDto> selectCounselorList(String accountId) {
+	public List<ChatDto> selectCounselorList(String partyAccount) {
 		Map<String,Object> params = new HashMap<>();
-		params.put("accountId", accountId);
+		params.put("partyAccount", partyAccount);
 		return sqlSession.selectList("chat.selectCounselorList", params);
 	}
 	
-	public ChatDto selectOne(int chatNo) {
-		return sqlSession.selectOne("chat.detail", chatNo);
+	public ChatDto selectOne(long chatNo) {
+		ChatDto chatDto = sqlSession.selectOne("chat.detail", chatNo);
+		if(chatDto == null) throw new TargetNotfoundException();
+		return chatDto;
 	}
 	
 	public boolean changeStatus(ChatDto chatDto) {
@@ -42,23 +45,22 @@ public class ChatDao {
 		return result > 0;
 	}
 	
-	public void enter(int chatNo, String accountId) {
+	public void enter(long chatNo, String accountId) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("chatNo", chatNo);
 		params.put("partyAccount", accountId);
 		sqlSession.insert("chat.enter", params);
 	}
 	
-	public boolean leave(int chatNo, String accountId) {
+	public boolean leave(long chatNo, String accountId) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("chatNo", chatNo);
 		params.put("partyAccount", accountId);
-		
-		int result = sqlSession.delete("chat.leave", params);
-		return result > 0;
+	
+		return sqlSession.delete("chat.leave", params) > 0;
 	}
 	
-	public boolean check(int chatNo, String accountId) {
+	public boolean check(long chatNo, String accountId) {
 		Map<String, Object> params = new HashMap<>();
 		params.put("chatNo", chatNo);
 		params.put("partyAccount", accountId);

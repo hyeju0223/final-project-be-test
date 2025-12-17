@@ -1,4 +1,4 @@
-package com.kh.maproot.dto;
+package com.kh.maproot.vo;
 
 import java.time.LocalDateTime;
 
@@ -12,12 +12,9 @@ import lombok.NoArgsConstructor;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class MessageDto {
-	private long messageNo;
-	private String messageType;
-	private long messageChat;
-	private String messageSender;
-	private String messageContent;
-	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SS")
-	private LocalDateTime messageTime;
+public class SystemMessageVO {
+	private String type;
+	private String content;
+	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+	private LocalDateTime time;
 }

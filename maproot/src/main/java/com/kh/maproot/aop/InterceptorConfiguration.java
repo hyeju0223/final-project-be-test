@@ -24,7 +24,7 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                         "/schedule/list"
                     )
                     .excludePathPatterns(
-                        
+
                     );
         registry.addInterceptor(tokenRenewalInterceptor)
                     .addPathPatterns("/**")
@@ -32,7 +32,9 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                             "/account/refresh",
                             "/account/join",
                             "/account/login",
-                            "/account/logout"
+                            "/account/logout",
+                            "/ws",
+                            "/websocket/**"
                             );
     }
 }

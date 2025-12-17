@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.kh.maproot.dto.AccountDto;
-import com.kh.maproot.error.TargetNotfoundException;
 
 @Repository
 public class AccountDao {
@@ -29,6 +28,9 @@ public class AccountDao {
 	}
 	public int countByAccountContact(String accountContact) {
 		return sqlSession.selectOne("account.countByAccountContact", accountContact);
+	}
+	public int countByAccountEmail(String accountEmail) {
+		return sqlSession.selectOne("account.countByAccountEmail", accountEmail);
 	}
 	
 	// 로그인 시 회원의 로그인 시간 업데이트 
@@ -63,7 +65,24 @@ public class AccountDao {
 		return sqlSession.selectOne("account.detail", accountId);
 	}
 	
+	//아이디 찾기
+	public String findAccountId(String accountContact, String accountEmail) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("accountContact", accountContact);
+		params.put("accountEmail", accountEmail);
+		
+		return sqlSession.selectOne("account.findAccountId", params);
+	}
 	
+	// 카카오페이 관련
+	public AccountDto originMaxSchedule(String accountId) {
+		return sqlSession.selectOne("account.originMaxSchedule", accountId);
+	}
+	
+	public long updateMaxSchedule(AccountDto accountDto) {
+		return sqlSession.update("account.updateMaxSchedule", accountDto);
+	}
+	// 카카오페이 관련
 	
 
 }

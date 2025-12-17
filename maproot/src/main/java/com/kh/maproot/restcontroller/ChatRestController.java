@@ -52,13 +52,10 @@ public class ChatRestController {
         }
 
         String counselorId = tokenVO.getLoginId();
+        
+        List<ChatDto> list = chatDao.selectCounselorList(counselorId);
+        
         return chatDao.selectCounselorList(counselorId);
-    }
-
-    // 3. 관리자용 전체 목록 조회 (필터링 없음)
-    @GetMapping("/admin/list")
-    public List<ChatDto> adminList() {
-        return chatDao.selectAllList();
     }
 
     @GetMapping("/{chatNo}")
@@ -107,6 +104,7 @@ public class ChatRestController {
 
     // 참여 여부 확인
     @PostMapping("/check")
+    @Transactional
     public Map<String, Boolean> check(
             @RequestBody Map<String, Object> data,
             @RequestAttribute TokenVO tokenVO) {

@@ -31,6 +31,10 @@
 		select count(*) from account where account_contact = #{accountContact}
 	</select>
 	
+	<select id="countByAccountEmail" resultType="int">
+		select count(*) from account where account_email = #{accountEmail}
+	</select>
+	
 	<!-- 회원의 로그인 시간 업데이트 -->
 	<update id="updateLoginTime">
 		update account 
@@ -135,5 +139,29 @@
 			order by account_join desc
 	</select>
 	
+	<!-- 아이디 찾기(휴대폰, 이메일) -->
+	<select id="findAccountId" resultType="String">
+		select account_id from account 
+		where 
+		<choose>
+			<when test="accountContact != null">
+				account_contact = #{accountContact}
+			</when>
+			<when test="accountEmail != null">
+				account_email = #{accountEmail}
+			</when>
+		
+		</choose>
+	</select>
+	
+<!-- 	카카오페이 관련 -->
+	<select id="originMaxSchedule" resultType="AccountDto">
+		select account_max_schedule from account where account_id = #{accountId}
+	</select>
+	
+	<update id="updateMaxSchedule">
+		update account set account_max_schedule = #{accountMaxSchedule} where account_id = #{accountId}
+	</update>
+<!-- 	카카오페이 관련 -->
 
 </mapper>

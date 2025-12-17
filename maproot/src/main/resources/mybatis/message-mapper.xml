@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="message">
+	<select id="sequence" resultType="long">
+		select message_seq.nextval from dual
+	</select>
+	
+	<insert id="insert">
+		insert into message(
+			message_no, message_type, message_chat, 
+			message_sender, message_content
+		)
+		values(
+			#{messageNo}, #{messageType}, #{messageChat},
+			#{messageSender}, #{messageContent}
+		)
+	</insert>
+	
+	<select id="detail" resultType="MessageDto">
+		select * from message where message_no = #{messageNo}
+	</select>
+	
+	<select id="list" resultType="messageDto">
+		select * from (
+			select rownom rn, TMP.* from (
+				select * from message
+				wheremessage_chat = #{messageChat}
+				<if test="messageNo != null">
+					<![CDATA[
+						and message_no < #{messageNo}
+					]]>
+				</if>
+				order by message_no desc
+			) TMP
+		) where rn between 1 and #{size}
+	</select>
+	
+	<select id="checkLast" resultType="int">
+		<![CDATA[
+			select count(*) from message
+			where
+				message_chat = #{messageChat}
+			and 
+				message_no < #{messageNo}
+		]]>
+	</select>
+</mapper>

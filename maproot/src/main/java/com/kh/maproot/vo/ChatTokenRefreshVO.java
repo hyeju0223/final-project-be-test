@@ -1,4 +1,4 @@
-package com.kh.maproot.dto;
+package com.kh.maproot.vo;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -9,11 +9,7 @@ import lombok.NoArgsConstructor;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class ChatDto {
-	private long chatNo;
-	private int chatMaxCount;
-	
-	private String chatStatus;
-	private String chatId;
-	private String chatLevel;
+public class ChatTokenRefreshVO {
+	private String accessToken;
+	private String refreshToken;
 }

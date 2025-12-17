@@ -1,6 +1,9 @@
-package com.kh.maproot.dto;
+package com.kh.maproot.vo;
+
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.kh.maproot.dto.MessageDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,11 +12,7 @@ import lombok.NoArgsConstructor;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
-public class ChatDto {
-	private long chatNo;
-	private int chatMaxCount;
-	
-	private String chatStatus;
-	private String chatId;
-	private String chatLevel;
+public class MessageVO {
+	private boolean last;
+	private List<MessageDto> message;
 }
