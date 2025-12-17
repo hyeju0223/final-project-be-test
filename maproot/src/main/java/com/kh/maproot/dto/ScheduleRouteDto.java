@@ -16,6 +16,7 @@ public class ScheduleRouteDto {
 	private Integer scheduleRouteDistance;
 	private String ordinateString; // Geom에 들어가기위한 문자열
 	private String scheduleRoutePriority;
+	private String type;
 	private String tempStartKey; // db에 start_no를 저장하기위해 사용하려는 임시 변수
 	private String tempEndKey; // db에 end_no를 저장하기위해 사용하려는 임시 변수
 }

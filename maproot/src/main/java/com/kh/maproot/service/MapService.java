@@ -226,6 +226,7 @@ public class MapService {
 	                .scheduleRouteDistance(route.getDistance())
 	                .ordinateString(ordinateString)
 	                .scheduleRoutePriority(route.getPriority())
+	                .type(route.getType())
 	                .tempStartKey(tempKey[0])
 	                .tempEndKey(tempKey[1])
 	                .build();

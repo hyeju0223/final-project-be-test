@@ -15,4 +15,5 @@ public class KakaoMapRoutesDto {
 	private Integer distance;
 	private Integer duration;
 	private List<KakaoMapCoordinateVO> linepath;
+	private String type;
 }
