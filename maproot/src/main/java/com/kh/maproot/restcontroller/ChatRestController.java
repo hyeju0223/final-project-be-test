@@ -19,8 +19,10 @@ import com.kh.maproot.dto.ChatDto;
 import com.kh.maproot.error.TargetNotfoundException;
 import com.kh.maproot.vo.TokenVO;
 
+import lombok.extern.slf4j.Slf4j;
+
 @CrossOrigin
-@RestController
+@RestController @Slf4j
 @RequestMapping("/chat")
 public class ChatRestController {
 
@@ -32,7 +34,7 @@ public class ChatRestController {
     public ChatDto create(
             @RequestBody ChatDto chatDto,
             @RequestAttribute TokenVO tokenVO) {
-
+    	log.debug("tokenVO1 = {}", tokenVO);
         chatDto.setChatStatus("WAITING");
 
         ChatDto resultDto = chatDao.insert(chatDto);
@@ -50,7 +52,7 @@ public class ChatRestController {
         if (!"상담사".equals(accountLevel)) {
             throw new TargetNotfoundException("접근 권한이 없습니다.");
         }
-
+        log.debug("tokenVO2 = {}", tokenVO);
         String counselorId = tokenVO.getLoginId();
         
         List<ChatDto> list = chatDao.selectCounselorList(counselorId);
@@ -72,6 +74,7 @@ public class ChatRestController {
 
         String loginId = tokenVO.getLoginId();
         String loginLevel = tokenVO.getLoginLevel();
+        log.debug("tokenVO3 = {}", tokenVO);
 
         if ("ACTIVE".equals(chatDto.getChatStatus())) {
 
@@ -95,7 +98,7 @@ public class ChatRestController {
     public void enter(
             @RequestBody Map<String, Object> data,
             @RequestAttribute TokenVO tokenVO) {
-
+    	log.debug("tokenVO5 = {}", tokenVO);
         int chatNo = (Integer) data.get("chatNo");
         String accountId = tokenVO.getLoginId();
 
@@ -108,7 +111,7 @@ public class ChatRestController {
     public Map<String, Boolean> check(
             @RequestBody Map<String, Object> data,
             @RequestAttribute TokenVO tokenVO) {
-
+    	log.debug("tokenVO6 = {}", tokenVO);
         int chatNo = (Integer) data.get("chatNo");
         String accountId = tokenVO.getLoginId();
 
