@@ -19,9 +19,11 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
                     .addPathPatterns(
                         "/account/logout",
                         "/chat/**",
+                        "/chat",
                         "/kakaopay/buy",
                         "/payment/**",
-                        "/schedule/list"
+                        "/schedule/list",
+                        "/message/**"
                     )
                     .excludePathPatterns(
 
