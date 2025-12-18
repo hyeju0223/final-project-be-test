@@ -18,10 +18,12 @@ public class InterceptorConfiguration implements WebMvcConfigurer{
         registry.addInterceptor(accountInterceptor)
                     .addPathPatterns(
                         "/account/logout",
+                        "/account/mypage",
                         "/chat/**",
                         "/kakaopay/buy",
                         "/payment/**",
-                        "/schedule/list"
+                        "/schedule/list",
+                        "/account/edit"
                     )
                     .excludePathPatterns(
 
