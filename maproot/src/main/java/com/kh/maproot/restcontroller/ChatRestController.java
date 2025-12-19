@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.kh.maproot.dao.ChatDao;
 import com.kh.maproot.dto.ChatDto;
 import com.kh.maproot.error.TargetNotfoundException;
+import com.kh.maproot.service.ChatService;
 import com.kh.maproot.vo.TokenVO;
 
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,8 @@ public class ChatRestController {
 
     @Autowired
     private ChatDao chatDao;
+    @Autowired
+    private ChatService chatService;
 
     @PostMapping
     @Transactional
@@ -66,31 +69,49 @@ public class ChatRestController {
     }
 
     // 채팅방 상태 및 상담원 배정/해제
+//    @PostMapping("/status")
+//    @Transactional
+//    public boolean changeStatus(
+//            @RequestBody ChatDto chatDto,
+//            @RequestAttribute TokenVO tokenVO) {
+//
+//        String loginId = tokenVO.getLoginId();
+//        String loginLevel = tokenVO.getLoginLevel();
+//        log.debug("tokenVO3 = {}", tokenVO);
+//
+//        if ("ACTIVE".equals(chatDto.getChatStatus())) {
+//
+//            if (!"상담사".equals(loginLevel)) {
+//                throw new RuntimeException("상담사만 상담을 시작할 수 있습니다.");
+//            }
+//
+//            chatDto.setChatId(loginId);
+//            chatDto.setChatLevel("상담사");
+//        }
+//        else {
+//            chatDto.setChatId(null);
+//            chatDto.setChatLevel(null);
+//        }
+//
+//        return chatDao.changeStatus(chatDto);
+//    }
+    // 태훈 - 서비스를 구현해 서비스만 호출
     @PostMapping("/status")
-    @Transactional
-    public boolean changeStatus(
-            @RequestBody ChatDto chatDto,
-            @RequestAttribute TokenVO tokenVO) {
-
-        String loginId = tokenVO.getLoginId();
-        String loginLevel = tokenVO.getLoginLevel();
-        log.debug("tokenVO3 = {}", tokenVO);
-
-        if ("ACTIVE".equals(chatDto.getChatStatus())) {
-
-            if (!"상담사".equals(loginLevel)) {
-                throw new RuntimeException("상담사만 상담을 시작할 수 있습니다.");
-            }
-
-            chatDto.setChatId(loginId);
-            chatDto.setChatLevel("상담사");
-        }
-        else {
-            chatDto.setChatId(null);
-            chatDto.setChatLevel(null);
-        }
-
-        return chatDao.changeStatus(chatDto);
+    public void changeStatus(
+    		@RequestAttribute TokenVO tokenVO,
+    		@RequestBody ChatDto chatDto) {
+    	String loginId = tokenVO.getLoginId();
+    	String loginLevel = tokenVO.getLoginLevel();
+    	
+    	// 1. 상담 시작(tokenVO에서 검사한 정보를 토대로 확인)
+    	if("ACTIVE".equals(chatDto.getChatStatus())) {
+    		if(!"상담사".equals(loginLevel)) {
+    			throw new TargetNotfoundException("상담사가 아닙니다");
+    		}
+    		// 위에서 통과하면 서비스 호출
+    		chatService.sendAgentAssigned(chatDto, loginId);
+    	}
+    	
     }
 
     // 채팅방 참여 (party 테이블에 등록)

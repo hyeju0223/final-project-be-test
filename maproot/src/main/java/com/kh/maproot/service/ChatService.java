@@ -1,5 +1,7 @@
 package com.kh.maproot.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -7,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.kh.maproot.dao.ChatDao;
 import com.kh.maproot.dao.MessageDao;
+import com.kh.maproot.dto.ChatDto;
 import com.kh.maproot.dto.MessageDto;
 import com.kh.maproot.vo.MemberRequestVO;
 import com.kh.maproot.vo.TokenVO;
@@ -34,18 +37,44 @@ public class ChatService {
 		);
 	}
 	
+//	@Transactional
+//	public void sendAgentAssigned(long chatNo, String accountId) {
+//		MessageDto messageDto = messageDao.insert(MessageDto.builder()
+//				.messageType("system")
+//				.messageContent("상담사와 연결되었습니다")
+//				.messageChat(chatNo)
+//			.build()
+//		);
+//		
+//		simpMessagingTemplate.convertAndSend(
+//			"/public/message/" + chatNo + "/system", messageDto
+//		);
+//	}
 	@Transactional
-	public void sendAgentAssigned(long chatNo, String accountId) {
-		MessageDto messageDto = messageDao.insert(MessageDto.builder()
-				.messageType("system")
-				.messageContent("상담사와 연결되었습니다")
-				.messageChat(chatNo)
-			.build()
-		);
+	public void sendAgentAssigned(ChatDto chatDto, String accountId) {
+		//1. DB 상태  업데이트(Active) 
+		chatDto.setChatId(accountId);
+		chatDto.setChatLevel("상담사");
+		chatDto.setChatStatus("ACTIVE");
 		
-		simpMessagingTemplate.convertAndSend(
-			"/public/message/" + chatNo + "/system", messageDto
-		);
+		chatDao.changeStatus(chatDto);
+		
+		// 상담사도 참여자 명단에 추가
+		chatDao.enter(chatDto.getChatNo(), accountId);
+		
+		//2. 기존 메세지 전송 
+		long chatNo = chatDto.getChatNo();
+		
+		MessageDto messageDto = MessageDto.builder()
+					.messageType("system")
+					.messageContent("상담사와 연결되었습니다")
+					.messageChat(chatNo)
+				.build();
+		
+		//DB에 저장
+		messageDao.insert(messageDto);
+		
+		simpMessagingTemplate.convertAndSend("/public/message/" + chatNo + "/system", messageDto);
 	}
 	
 	@Transactional
@@ -67,14 +96,15 @@ public class ChatService {
 		MessageDto messageDto = messageDao.insert(
 			MessageDto.builder()
 				.messageChat(chatNo)
-				.messageType("chat")
+				.messageType("TALK")//프론트엔드에서 보내는 messageType 불일치 (chat--->TALK 수정)
 				.messageContent(requestVO.getContent())
 				.messageSender(tokenVO.getLoginId())
+				.messageTime(LocalDateTime.now()) //시간 추가
 			.build()
 		);
 		simpMessagingTemplate.convertAndSend(
-			"/public/message/"+chatNo, messageDto 
-		);
+			    "/public/message/" + chatNo, messageDto 
+			);
 	}
 	
 	@Transactional
