@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,7 +39,6 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @Tag(name = "회원 관리 컨트롤러")
@@ -59,8 +57,6 @@ public class AccountRestController {
 	private PasswordEncoder passwordEncoder;
 	@Autowired
 	private RefreshTokenDao refreshTokenDao;
-	@Autowired
-	private AttachmentService attachmentService;
 	
 	@Operation(
 			summary = "신규 회원 가입", // [1] 짧은 제목
