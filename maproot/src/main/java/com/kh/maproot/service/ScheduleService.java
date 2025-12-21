@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Struct;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,11 +18,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dao.ScheduleDao;
 import com.kh.maproot.dao.ScheduleMemberDao;
 import com.kh.maproot.dao.ScheduleRouteDao;
 import com.kh.maproot.dao.ScheduleTagDao;
 import com.kh.maproot.dao.ScheduleUnitDao;
+import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.dto.ScheduleDto;
 import com.kh.maproot.dto.ScheduleMemberDto;
 import com.kh.maproot.dto.ScheduleRouteDto;
@@ -30,6 +33,7 @@ import com.kh.maproot.dto.ScheduleUnitDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDataDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapDaysDto;
 import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
+import com.kh.maproot.error.UnauthorizationException;
 import com.kh.maproot.schedule.vo.ScheduleCreateRequestVO;
 import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.schedule.vo.ScheduleListResponseVO;
@@ -54,6 +58,8 @@ public class ScheduleService {
 	private ScheduleRouteDao scheduleRouteDao;
 	@Autowired
 	private AttachmentService attachmentService;
+	@Autowired
+	private AccountDao accountDao;
 	
 	@Transactional
 	public ScheduleDto insert(ScheduleCreateRequestVO scheduleVO, MultipartFile attach) throws IllegalStateException, IOException {
@@ -80,10 +86,19 @@ public class ScheduleService {
 				
 				//맴버 테이블에도 추가
 				
+				AccountDto accountDto = accountDao.selectOne(scheduleVO.getScheduleOwner());
+				
+				accountDto.setAttachmentNo(
+						accountDto.getAttachmentNo() != null && accountDto.getAttachmentNo() > 0
+					        ? accountDto.getAttachmentNo()
+					        : null
+					);
+
+				
 				ScheduleMemberDto scheduleMemberDto = ScheduleMemberDto.builder()
 						.scheduleNo(sequence)
-						.accountId("testuser1")
-						.scheduleMemberNickname("테스트유저1")
+						.accountId(accountDto.getAccountId())
+						.scheduleMemberNickname(accountDto.getAccountNickname())
 						.scheduleMemberRole("member")
 						.scheduleMemberNotify("Y")
 					.build();
@@ -187,6 +202,7 @@ public class ScheduleService {
 	    return path;
 	}
 	
+	//일정 조회 (본인참여되어있는거)
 	@Transactional
 	public List<ScheduleListResponseVO> loadScheduleList(String accountId) {
 		List<ScheduleMemberDto> list = scheduleMemberDao.selectByAccountId(accountId);
@@ -200,6 +216,7 @@ public class ScheduleService {
 			Long scheduleNo = scheduleMemberDto.getScheduleNo();
 			
 			ScheduleDto findScheduleDto = scheduleDao.selectByScheduleNo(scheduleNo);
+			findScheduleDto.setScheduleState(scheduleState(findScheduleDto.getScheduleStartDate(), findScheduleDto.getScheduleEndDate()));
 			ScheduleUnitDto unitFirst = scheduleUnitDao.selectFirstUnit(scheduleNo);
 			Integer unitCount = scheduleUnitDao.selectUnitCount(scheduleNo);
 			Integer memberCount = scheduleMemberDao.selectMemberCount(scheduleNo);
@@ -261,5 +278,39 @@ public class ScheduleService {
 	    }
 	    return voList;
 	}
+	
+	//약속전/진행중/종료
+	public String scheduleState(LocalDateTime start, LocalDateTime end) {
+
+	    if (start == null) {
+	        throw new IllegalArgumentException("약속 시작시간은 필수입니다.");
+	    }
+
+	    LocalDateTime now = LocalDateTime.now();
+
+	    // 종료시간 없으면 시작 + 1일
+	    LocalDateTime resolvedEnd = (end != null) ? end : start.plusDays(1);
+
+	    // 약속 전
+	    if (now.isBefore(start)) {
+	        return "약속전";
+	    }
+
+	    // 종료 (종료를 먼저 판정)
+	    if (!now.isBefore(resolvedEnd)) {
+	        return "종료";
+	    }
+
+	    // 진행 중
+	    return "진행중";
+	}
+	
+	@Transactional
+	public void updateSchedulePublic(Long scheduleNo, boolean schedulePublic) {
+	    String yn = schedulePublic ? "Y" : "N";
+	    int updated = scheduleDao.updateSchedulePublic(scheduleNo, yn);
+	    System.out.println("updateSchedulePublic scheduleNo=" + scheduleNo + " yn=" + yn + " updated=" + updated);
+	}
+	 
 
 }

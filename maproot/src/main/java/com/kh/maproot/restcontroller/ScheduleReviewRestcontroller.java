@@ -101,6 +101,7 @@ public class ScheduleReviewRestcontroller {
 	                    .reviewContent(row.getReviewContent())
 	                    .reviewWtime(row.getReviewWtime())
 	                    .reviewEtime(row.getReviewEtime())
+	                    .attachmentNo(row.getAttachmentNo())
 	                    .scheduleUnitNoList(new ArrayList<>()) // 처음엔 빈 리스트
 	                    .build()
 	        );

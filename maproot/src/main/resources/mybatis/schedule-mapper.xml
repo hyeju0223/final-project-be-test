@@ -73,11 +73,22 @@
 		where schedule_no = #{scheduleNo}
 	</select>
 	
+	<select id="selectByOwner" resultType="ScheduleDto">
+		select * from schedule
+		where schedule_owner = #{scheduleOwner}
+	</select>
+	
 	<!-- 공개된 전체 일정 -->
 	<select id="selectAllList" resultType="ScheduleDto">
 		select * from schedule 
 		where schedule_public = 'Y' order by schedule_no desc
 	</select>
+
+<update id="updateSchedulePublic">
+  update schedule
+  set schedule_public = #{schedulePublic}
+  where schedule_no = #{scheduleNo}
+</update>
 
 
 

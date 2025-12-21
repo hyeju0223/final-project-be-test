@@ -18,6 +18,7 @@ public class ScheduleMemberDao {
 	private SqlSession sqlSession;
 	
 	public List<ScheduleMemberDto> selectByAccountId (String accountId) {
+
 		Map<String, Object> params = new HashMap<>();
 		params.put("accountId", accountId);
 		
@@ -39,4 +40,15 @@ public class ScheduleMemberDao {
 		
 		return sqlSession.selectList("scheduleMember.select", params);
 	}
+	
+	public boolean exists(Long scheduleNo, String accountId) {
+	    Integer result = sqlSession.selectOne("scheduleMember.exists", Map.of(
+	        "scheduleNo", scheduleNo,
+	        "accountId", accountId
+	    ));
+	    return result != null && result == 1;
+	}
+
+
+
 }

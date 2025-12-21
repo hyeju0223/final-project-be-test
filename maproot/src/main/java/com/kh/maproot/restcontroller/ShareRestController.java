@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -15,10 +16,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.kh.maproot.dao.AccountDao;
 import com.kh.maproot.dao.GuestDao;
+import com.kh.maproot.dao.ScheduleMemberDao;
 import com.kh.maproot.dao.ShareLinkDao;
+import com.kh.maproot.dto.AccountDto;
 import com.kh.maproot.dto.GuestDto;
+import com.kh.maproot.dto.ScheduleMemberDto;
 import com.kh.maproot.dto.ShareLinkDto;
+import com.kh.maproot.schedule.vo.InsertScheduleMemberVO;
 import com.kh.maproot.schedule.vo.VerifyRequestVO;
 import com.kh.maproot.service.ShareAuthService;
 import com.kh.maproot.service.TokenService;
@@ -44,6 +50,10 @@ public class ShareRestController {
 	private GuestDao guestDao;
 	@Autowired
 	private ShareAuthService shareAuthService;
+	@Autowired
+	private ScheduleMemberDao scheduleMemberDao;
+	@Autowired
+	private AccountDao accountDao;
 	
 	//공유키 검사
 	@PostMapping("/verify")
@@ -125,5 +135,35 @@ public class ShareRestController {
 			
 		}
 		
+	}
+	
+	//중복 검사
+	@PostMapping("/nickname/{nickname}")
+	public boolean existNickname(@PathVariable String nickname) {
+		System.out.println(nickname);
+		return guestDao.selectByNickname(nickname);
+	}
+	
+	//공유받은 링크로 들어온 회원 멤버리스트에 추가하기
+	@PostMapping("/member/{scheduleNo}")
+	public void insertScheduleMember(
+			@PathVariable Long scheduleNo, @RequestBody InsertScheduleMemberVO insertScheduleMemberVO
+			) {
+		
+		AccountDto findDto = accountDao.selectOne(insertScheduleMemberVO.getAccountId());
+		
+	    if (scheduleMemberDao.exists(scheduleNo, insertScheduleMemberVO.getAccountId())) {
+	        return;
+	    }
+		
+		ScheduleMemberDto scheduleMemberDto = ScheduleMemberDto.builder()
+				.scheduleNo(scheduleNo)
+				.accountId(findDto.getAccountId())
+				.scheduleMemberNickname(findDto.getAccountNickname())
+				.scheduleMemberRole("member")
+				.scheduleMemberNotify("Y")
+				.build();
+		
+		scheduleMemberDao.insert(scheduleMemberDto);
 	}
 }

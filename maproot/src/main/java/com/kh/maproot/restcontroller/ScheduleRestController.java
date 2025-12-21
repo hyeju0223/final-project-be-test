@@ -14,9 +14,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +48,7 @@ import com.kh.maproot.dto.kakaomap.KakaoMapRoutesDto;
 import com.kh.maproot.schedule.vo.ScheduleCreateRequestVO;
 import com.kh.maproot.schedule.vo.ScheduleInsertDataWrapperVO;
 import com.kh.maproot.schedule.vo.ScheduleListResponseVO;
+import com.kh.maproot.schedule.vo.SchedulePublicUpdateRequestVO;
 import com.kh.maproot.service.TokenService;
 import com.kh.maproot.service.EmailService;
 import com.kh.maproot.service.ScheduleService;
@@ -135,4 +138,14 @@ public class ScheduleRestController {
 	public List<ScheduleListResponseVO> listAll(){
 		return scheduleService.loadScheduleList();
 	}
+	
+	//public 변경
+	@PatchMapping("/public")
+    public ResponseEntity<Void> updateSchedulePublic(
+            @RequestBody SchedulePublicUpdateRequestVO vo
+    ) {
+		System.out.println("숫자확인"+vo);
+        scheduleService.updateSchedulePublic(vo.getScheduleNo(), vo.isSchedulePublic());
+        return ResponseEntity.noContent().build();
+    }
 }
