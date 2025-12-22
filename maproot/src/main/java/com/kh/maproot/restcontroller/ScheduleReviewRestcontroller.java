@@ -102,6 +102,7 @@ public class ScheduleReviewRestcontroller {
 	                    .reviewContent(row.getReviewContent())
 	                    .reviewWtime(row.getReviewWtime())
 	                    .reviewEtime(row.getReviewEtime())
+	                    .reviewType(row.getReviewType())
 	                    .attachmentNo(row.getAttachmentNo())
 	                    .scheduleUnitNoList(new ArrayList<>()) // 처음엔 빈 리스트
 	                    .build()
@@ -129,12 +130,14 @@ public class ScheduleReviewRestcontroller {
 			@RequestHeader(value = "Authorization", required = false) String authorization
 			) {
 		 
+		System.out.println("reviewRequestVO" + reviewRequestVO);
 
 		//댓글 등록 (추후 사진 이미지 추가 필요)
 		ReviewDto reviewDto = ReviewDto.builder()
 				.scheduleNo(reviewRequestVO.getScheduleNo())
 				.reviewContent(reviewRequestVO.getReviewContent())
 				.reviewWtime(Timestamp.valueOf(LocalDateTime.now()))
+				.reviewType(reviewRequestVO.getReviewType())
 				.build();
 		
 		
@@ -147,9 +150,6 @@ public class ScheduleReviewRestcontroller {
 		     finished = scheduleDto.getScheduleEndDate().isBefore(now);
 		 }
 
-		    reviewDto.setReviewType(finished ? "멤버후기" : "댓글");
-		
-		
 		
 		//유저인지, 게스트인지 확인 필요(유저 정보는 백엔드에서 해결)
 		try { //게스트 토큰 먼저 시도
