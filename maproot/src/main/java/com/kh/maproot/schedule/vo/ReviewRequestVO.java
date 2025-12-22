@@ -24,5 +24,6 @@ public class ReviewRequestVO {
 	    private String reviewContent;            // 리뷰 본문
 	    private Timestamp reviewWtime;       // 작성 시간
 	    private Timestamp reviewEtime;      // 수정 시간
+	    private String reviewType;
 
 }
