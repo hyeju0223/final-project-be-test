@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="payment">
+	
+	<select id="sequence" resultType="long">
+		select payment_seq.nextval from dual
+	</select>
+	<insert id="insert">
+		insert into payment(
+			payment_no, payment_owner, payment_tid,
+			payment_name, payment_total, payment_remain
+		)
+		values(
+			#{paymentNo}, #{paymentOwner}, #{paymentTid},
+			#{paymentName}, #{paymentTotal}, #{paymentRemain}
+		)
+	</insert>
+	
+	<select id="listByOwner" resultType="PaymentDto">
+		select * from payment 
+		where payment_owner = #{loginId}
+		order by payment_no desc
+	</select>
+	<select id="detail" resultType="PaymentDto">
+		select * from payment where payment_no = #{paymentNo}
+	</select>
+	
+	<update id="cancelAll">
+		update payment 
+		set payment_remain=0
+		where payment_no = #{paymentNo}
+	</update>
+	<update id="cancelUnit">
+		update payment 
+		set payment_remain=#{paymentRemain}
+		where payment_no = #{paymentNo}
+	</update>
+	
+<!-- 	카카오페이 관련 -->
+<!-- 전체 취소시, 취소한 PaymentNo는 아는데 PaymentOwner는 알 수 없기에 만들었다 -->
+	<select id="whoCancelAll" resultType="PaymentDto">
+		select * from payment 
+		where payment_no = #{paymentNo}
+	</select>
+<!-- 	카카오페이 관련 -->
+
+<!-- 조회(페이징 + 카운트) -->
+	<select id="countByPaging" resultType="int">
+		select count(*) from payment 
+		where payment_owner = #{paymentOwner}
+	</select>
+	
+	<select id="listByPaging" resultType="PaymentDto">
+		select * from (
+			select rownum rn, TMP.* from (
+				select * from payment 
+				where payment_owner = #{paymentOwner}
+				order by payment_no desc
+			)TMP
+		) where rn between #{begin} and #{end}
+	</select>
+<!-- 조회(페이징 + 카운트) -->
+	<sql id="paymentSearchCondition">
+	    <where>
+	        <if test="search.column != null and search.keyword != null and search.keyword != ''">
+	            AND ${search.column} LIKE '%' || #{search.keyword} || '%'
+	        </if>
+	    </where>
+	</sql>
+	
+	<select id="listByPagingAll" resultType="PaymentDto">
+	    SELECT * FROM (
+	        SELECT rownum rn, TMP.* FROM (
+	            SELECT * FROM payment 
+	            <include refid="paymentSearchCondition" />
+	            ORDER BY payment_no DESC
+	        ) TMP
+	    ) WHERE rn BETWEEN #{page.begin} AND #{page.end}
+	</select>
+	
+	<select id="countByPagingAll" resultType="int">
+	    SELECT COUNT(*) FROM payment
+	    <include refid="paymentSearchCondition" />
+	</select>
+</mapper>

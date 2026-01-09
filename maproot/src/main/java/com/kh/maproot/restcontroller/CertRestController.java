@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/cert")
+@RequestMapping("/api/cert")
 public class CertRestController {
 	
 	@Autowired
@@ -45,6 +45,7 @@ public class CertRestController {
 	@Operation(summary = "휴대폰 인증번호 확인")
 	@PostMapping("/check")
 	public boolean checkCert(@RequestBody CertDto certDto) {
+		System.out.println("certDto"+certDto);
 		return certService.checkCertNumber(certDto.getCertTarget(), certDto.getCertNumber());
 	}
 	

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="accountLike">
+
+	 <!-- 좋아요 여부 확인 -->
+    <select id="check" resultType="int">
+        SELECT COUNT(*) FROM account_like 
+        WHERE account_id = #{accountId} AND schedule_no = #{scheduleNo}
+    </select>
+
+    <!-- 좋아요 추가 (INSERT) -->
+    <insert id="insert">
+        INSERT INTO account_like (account_id, schedule_no)
+        VALUES (#{accountId}, #{scheduleNo})
+    </insert>
+
+    <!-- 좋아요 취소 (DELETE) -->
+    <delete id="delete">
+        DELETE FROM account_like 
+        WHERE account_id = #{accountId} AND schedule_no = #{scheduleNo}
+    </delete>
+    
+    <select id="countLikes" resultType="int">
+    	SELECT count(*) 
+	    FROM account_like  <!-- 여기 테이블 이름이 목록 조회 쿼리와 같아야 합니다! -->
+	    WHERE schedule_no = #{scheduleNo}
+	</select>
+
+    
+</mapper>

@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @CrossOrigin
 @RestController @Slf4j
-@RequestMapping("/chat")
+@RequestMapping("/api/chat")
 public class ChatRestController {
 
     @Autowired

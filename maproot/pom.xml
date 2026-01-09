@@ -32,10 +32,10 @@
 	</properties>
 	
 	<dependencies>
-		<dependency>
+<!--		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jdbc</artifactId>
-		</dependency>
+		</dependency>-->
 		
 		<!-- 이메일 발송 도구 라이브러리 -->
 		<dependency>

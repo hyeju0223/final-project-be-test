@@ -18,4 +18,5 @@ public class ScheduleMemberDto {
     private String scheduleMemberRole;        // 'owner' / 'member'
     private String scheduleMemberNotify;      // 'Y' / 'N'
     private Timestamp scheduleMemberWtime;    // 가입 시간 / 생성 시간
+    private Integer profileAttachmentNo;
 }

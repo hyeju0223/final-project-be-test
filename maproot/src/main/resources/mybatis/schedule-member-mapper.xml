@@ -6,15 +6,20 @@
 <mapper namespace="scheduleMember">
 
 <select id="select" resultType="scheduleMemberDto">
-	select * from schedule_member
-	<where>
-	<if test="accountId != null">
-		and account_id = #{accountId}
-	</if>
-	<if test="scheduleNo !=null">
-		and schedule_no = #{scheduleNo}
-	</if>
-	</where>
+  SELECT
+      sm.*,
+      ap.attachment_no AS profile_AttachmentNo
+  FROM schedule_member sm
+  LEFT JOIN account_profile ap
+      ON ap.account_id = sm.account_id
+  <where>
+    <if test="accountId != null and accountId != ''">
+      AND sm.account_id = #{accountId}
+    </if>
+    <if test="scheduleNo != null">
+      AND sm.schedule_no = #{scheduleNo}
+    </if>
+  </where>
 
 </select>
 

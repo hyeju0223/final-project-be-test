@@ -49,7 +49,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/review")
+@RequestMapping("/api/review")
 public class ScheduleReviewRestcontroller {
 
     private final EncryptConfiguration encryptConfiguration;

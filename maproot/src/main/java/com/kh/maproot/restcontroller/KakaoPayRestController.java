@@ -44,7 +44,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping("/kakaopay")
+@RequestMapping("/api/kakaopay")
 public class KakaoPayRestController {
 	@Autowired
 	private KakaoPayService kakaoPayService;
@@ -98,7 +98,7 @@ public class KakaoPayRestController {
 			@RequestAttribute TokenVO tokenVO, 
 			@RequestHeader("Authorization") String bearerToken) {
 		
-		if (qtyList == null || qtyList.isEmpty())
+		try{if (qtyList == null || qtyList.isEmpty())
 			throw new TargetNotfoundException();
 
 		StringBuffer buffer = new StringBuffer();
@@ -139,6 +139,12 @@ public class KakaoPayRestController {
 		// [4] 결과를 반환한다
 		return responseVO;
 	}
+		catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+			 log.error("KakaoPay READY FAIL status={}", e.getStatusCode());
+			    log.error("KakaoPay READY FAIL body={}", e.getResponseBodyAsString()); // ★ 핵심
+			    throw e; // 또는 너가 원하는 에러로 변환
+		}
+	}
 
 	@Operation(summary = "카카오페이 구매 성공", description = "KakaoPay-Purchase-Success")
 	@GetMapping("/buy/success/{partnerOrderId}")
@@ -159,7 +165,9 @@ public class KakaoPayRestController {
 
 		paymentService.insert(responseVO, flashVO);
 
+//		response.sendRedirect(flashVO.getReturnUrl());
 		response.sendRedirect(flashVO.getReturnUrl() + "/success");
+
 	}
 
 	@Operation(summary = "카카오페이 구매 취소", description = "KakaoPay-Purchase-Cancel")

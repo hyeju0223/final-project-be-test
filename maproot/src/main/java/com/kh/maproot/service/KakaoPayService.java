@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.kh.maproot.configuration.KakaoPayProperties;
@@ -24,12 +26,14 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class KakaoPayService {
 
-	@Autowired
+	@Autowired @Qualifier("kakaopayWebClient")
 	private WebClient webClient;
 	@Autowired
 	private KakaoPayProperties kakaoPayProperties;
 
 	public KakaoPayReadyResponseVO ready(KakaoPayReadyRequestVO requestVO) {
+		
+		try {
 		Map<String, String> body = new HashMap<>();
 		body.put("cid", kakaoPayProperties.getCid());
 		body.put("partner_order_id", requestVO.getPartnerOrderId());
@@ -39,10 +43,20 @@ public class KakaoPayService {
 		body.put("total_amount", String.valueOf(requestVO.getTotalAmount()));
 		body.put("tax_free_amount", "0");
 
-		String currentPath = ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
-		body.put("approval_url", currentPath + "/success/" + requestVO.getPartnerOrderId());
-		body.put("cancel_url", currentPath + "/cancel/" + requestVO.getPartnerOrderId());
-		body.put("fail_url", currentPath + "/fail/" + requestVO.getPartnerOrderId());
+//		String currentPath = ServletUriComponentsBuilder.fromCurrentRequest().toUriString();
+		
+		String base = ServletUriComponentsBuilder
+			    .fromCurrentContextPath()
+			    .build()
+			    .toUriString();
+
+		body.put("approval_url", base + "/kakaopay/buy/success/" + requestVO.getPartnerOrderId());
+		body.put("cancel_url",   base + "/kakaopay/buy/cancel/"  + requestVO.getPartnerOrderId());
+		body.put("fail_url",     base + "/kakaopay/buy/fail/"    + requestVO.getPartnerOrderId());
+		
+//		body.put("approval_url", currentPath + "/success/" + requestVO.getPartnerOrderId());
+//		body.put("cancel_url", currentPath + "/cancel/" + requestVO.getPartnerOrderId());
+//		body.put("fail_url", currentPath + "/fail/" + requestVO.getPartnerOrderId());
 
 		KakaoPayReadyResponseVO response = webClient.post()
 				.uri("/online/v1/payment/ready")
@@ -51,7 +65,13 @@ public class KakaoPayService {
 				.bodyToMono(KakaoPayReadyResponseVO.class)
 				.block();
 		
-		return response;
+		return response; }
+	    catch (WebClientResponseException e) {
+	        log.error("KakaoPay status={}", e.getStatusCode());
+	        log.error("KakaoPay responseBody={}", e.getResponseBodyAsString()); // ⭐⭐⭐ 이 한 줄이 정답
+	        throw e;
+	    }
+		
 	}
 
 	public KakaoPayApproveResponseVO approve(KakaoPayApproveRequestVO requestVO) {

@@ -21,7 +21,7 @@ import com.kh.maproot.service.AttachmentService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/attachment")
+@RequestMapping("/api/attachment")
 public class AttachmentRestController {
 	// 사진을 화면에 불러오기 위한 REST 컨트롤러
 
@@ -44,7 +44,7 @@ public class AttachmentRestController {
 				.header(HttpHeaders.CONTENT_TYPE, attachmentDto.getAttachmentType())
 				.contentLength(attachmentDto.getAttachmentSize())
 				.header(HttpHeaders.CONTENT_DISPOSITION, 
-						ContentDisposition.attachment()
+						ContentDisposition.inline()
 						.filename(attachmentDto.getAttachmentName(), StandardCharsets.UTF_8)
 						.build().toString())
 				.body(resource);

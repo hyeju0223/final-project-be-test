@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +15,7 @@ import com.kh.maproot.dao.AttachmentDao;
 import com.kh.maproot.dto.AttachmentDto;
 import com.kh.maproot.error.TargetNotfoundException;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -23,8 +25,18 @@ public class AttachmentService {
 	@Autowired
 	private AttachmentDao attachmentDao;
 	
-	private File home = new File(System.getProperty("user.home"));
-	private File upload = new File(home, "upload");
+	@Value("${attachment.base-dir}")
+	private String baseDir;
+	
+	private File upload;
+	
+	@PostConstruct
+	public void init() {
+	    upload = new File(baseDir);
+	}
+	
+//	private File home = new File(System.getProperty("user.home"));
+//	private File upload = new File(home, "upload");
 	
 	@Transactional
 	public Long save(MultipartFile attach) throws IllegalStateException, IOException {

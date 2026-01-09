@@ -20,7 +20,7 @@ import com.kh.maproot.vo.TokenVO;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/message")
+@RequestMapping("/api/message")
 public class MessageRestController {
 	@Autowired
 	private MessageDao messageDao;

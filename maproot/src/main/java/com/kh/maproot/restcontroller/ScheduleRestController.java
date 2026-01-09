@@ -63,7 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @CrossOrigin
 @RestController @Slf4j
-@RequestMapping("/schedule")
+@RequestMapping("/api/schedule")
 public class ScheduleRestController {
 
 	
@@ -129,8 +129,14 @@ public class ScheduleRestController {
 	    return scheduleService.loadScheduleData(scheduleDto);
 	}
 	
+	// 예전 주소 호환용 (프론트가 /api/schedule 로 호출해도 동작)
+	@GetMapping({"", "/"})
+	public List<ScheduleListResponseVO> listAllLegacy() {
+	    return scheduleService.loadScheduleList();
+	}
+	
 	// 전체 일정 목록(회원일때, 아닐때)
-	@GetMapping("/")
+	@GetMapping("/all")
 	public List<ScheduleListResponseVO> listAll(){
 		return scheduleService.loadScheduleList();
 	}

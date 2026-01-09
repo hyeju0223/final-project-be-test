@@ -10,7 +10,7 @@ public class KakaoPayConfiguration {
 	@Autowired
 	private KakaoPayProperties kakaoPayProperties;
 	
-	@Bean
+	@Bean(name = "kakaopayWebClient")
 	public WebClient webClient() {
 		return WebClient.builder()
 				.baseUrl("https://open-api.kakaopay.com")

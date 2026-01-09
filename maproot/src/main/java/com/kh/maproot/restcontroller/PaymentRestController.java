@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CrossOrigin
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/api/payment")
 public class PaymentRestController {
 	@Autowired
 	private PaymentDao paymentDao;

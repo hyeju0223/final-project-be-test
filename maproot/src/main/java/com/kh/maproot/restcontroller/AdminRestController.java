@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @CrossOrigin @Slf4j
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminRestController {
 	@Autowired
 	private AccountDao accountDao;

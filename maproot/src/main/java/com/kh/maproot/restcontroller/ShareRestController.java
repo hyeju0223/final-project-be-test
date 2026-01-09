@@ -39,7 +39,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/share")
+@RequestMapping("/api/share")
 public class ShareRestController {
 
 	@Autowired
