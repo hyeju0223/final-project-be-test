@@ -26,4 +26,5 @@ public class ReviewRequestVO {
 	    private Timestamp reviewEtime;      // 수정 시간
 	    private String reviewType;
 
+
 }

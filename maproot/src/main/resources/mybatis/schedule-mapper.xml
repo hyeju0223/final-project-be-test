@@ -135,7 +135,6 @@
         <!-- Case 2: 전체 공개 일정 보기 -->
         <if test="accountId == null or accountId == ''">
             AND S.schedule_public = 'Y'
-            AND S.schedule_end_date &lt; SYSDATE
         </if>
     </where>
     ORDER BY S.schedule_no DESC

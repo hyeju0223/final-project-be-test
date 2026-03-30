@@ -21,7 +21,8 @@ public class ReactViewController {
 			"/error/**",
 			"/admin/**",
 			"/share/**",
-			"/schedulePage/**"
+			"/schedulePage/**",
+			"/scheduleList/**"
 			})
 	public String forward() {
 		return "forward:/index.html";

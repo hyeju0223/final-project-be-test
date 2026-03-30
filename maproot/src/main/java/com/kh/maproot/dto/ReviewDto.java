@@ -25,4 +25,5 @@ public class ReviewDto {
 	    private Timestamp reviewEtime;      // 수정 시간
 	    private List<Integer> scheduleUnitNoList;
 	    private String reviewType;
+
 }

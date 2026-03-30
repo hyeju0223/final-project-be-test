@@ -110,7 +110,7 @@ public class MapService {
 	public KakaoMapGeocoderResponseVO getAddress(KakaoMapGeocoderRequestVO requestVO) {
 		KakaoMapGeocoderResponseVO response = localClient.get()
 				.uri(uriBuilder -> uriBuilder
-				        .path("/geo/coord2address") // 🚨 baseUrl 이후의 경로만 지정
+				        .path("/geo/coord2address.json") // 🚨 baseUrl 이후의 경로만 지정
 				        .queryParam("x", requestVO.getX()) // 🚨 쿼리 파라미터로 데이터 전달
 				        .queryParam("y", requestVO.getY())
 				        .queryParam("input_coord", requestVO.getInputCoord())
